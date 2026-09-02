@@ -1,0 +1,17 @@
+{
+  "name": "satyesh-portfolio-chatbot-api",
+  "version": "1.0.0",
+  "description": "Serverless API (Vercel Functions) powering Satyesh Kumar Singh's portfolio chatbot",
+  "private": true,
+  "scripts": {
+    "dev": "node dev-server.js"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.3",
+    "@google/generative-ai": "^0.1.3",
+    "dotenv": "^16.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

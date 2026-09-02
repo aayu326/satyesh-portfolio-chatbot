@@ -1,0 +1,679 @@
+<!--
+  PORTFOLIO CHATBOT WIDGET — Satyesh Kumar Singh
+  ================================================
+  How to use:
+  Paste this ENTIRE block just before the closing </body> tag of your site
+  (e.g. in public/index.html if you're on Create React App / Vite / Next.js —
+  it's plain HTML/CSS/JS so it works no matter what framework renders the
+  rest of the page around it).
+
+  Before it will work, set API_BASE below to your deployed Vercel API URL,
+  e.g. "https://your-project-name.vercel.app"
+-->
+<style>
+  .pfc-toggle::after {
+    content: ''; position: absolute; top: 0; left: -150%; width: 60%; height: 100%;
+    background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0) 30%, rgba(255,215,140,0.85) 50%, rgba(255,255,255,0) 70%, transparent 100%);
+    transform: skewX(-20deg); animation: pfcShine 3.5s ease-in-out infinite; pointer-events: none; z-index: 2;
+  }
+  @keyframes pfcShine { 0%{left:-150%;} 35%{left:150%;} 100%{left:150%;} }
+
+  .pfc-toggle {
+    position: fixed; bottom: 20px; right: 20px; width: 65px; height: 65px; border-radius: 50%;
+    background: linear-gradient(135deg, #1a4a2e 0%, #0d2d1a 100%); border: none; cursor: pointer;
+    box-shadow: 0 8px 25px rgba(26,74,46,0.5); display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s ease; z-index: 9999; overflow: hidden; font-family: 'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  }
+  .pfc-robot-icon { position: relative; width: 34px; height: 34px; z-index: 3; }
+  .pfc-robot-icon svg { width: 100%; height: 100%; overflow: visible; }
+  .pfc-antenna-dot { animation: pfcAntennaGlow 1.8s ease-in-out infinite; transform-origin: center; }
+  @keyframes pfcAntennaGlow { 0%,100%{opacity:1;r:3;} 50%{opacity:0.55;r:3.8;} }
+  .pfc-eye { animation: pfcBlink 3.2s ease-in-out infinite; transform-origin: center; }
+  @keyframes pfcBlink { 0%,90%,100%{transform:scaleY(1);} 93%,97%{transform:scaleY(0.15);} }
+  .pfc-hand { animation: pfcWave 1.6s ease-in-out infinite; transform-origin: 90% 20%; }
+  @keyframes pfcWave { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(20deg);} 50%{transform:rotate(-8deg);} 75%{transform:rotate(16deg);} }
+  .pfc-toggle:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 12px 35px rgba(26,74,46,0.6); }
+  .pfc-toggle.active { background: linear-gradient(135deg, #c47f2a 0%, #a06520 100%); transform: rotate(90deg); }
+  .pfc-close-icon { display: none; width: 32px; height: 32px; fill: white; }
+  .pfc-toggle.active .pfc-robot-icon { display: none; }
+  .pfc-toggle.active .pfc-close-icon { display: block; }
+  .pfc-toggle::before {
+    content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%;
+    background: linear-gradient(135deg, #1a4a2e 0%, #0d2d1a 100%); opacity: 0.3; animation: pfcPulseRing 2s ease-out infinite;
+  }
+  @keyframes pfcPulseRing { 0%{transform:scale(1);opacity:0.3;} 50%{transform:scale(1.3);opacity:0;} 100%{transform:scale(1);opacity:0;} }
+
+  .pfc-bubble {
+    position: fixed; bottom: 100px; right: 20px; background: linear-gradient(135deg, #1a4a2e 0%, #0d2d1a 100%);
+    color: white; padding: 14px 18px; border-radius: 20px; border-bottom-right-radius: 4px; font-size: 14px; font-weight: 600;
+    box-shadow: 0 8px 20px rgba(26,74,46,0.4); z-index: 9998; animation: pfcBubbleFloat 3s ease-in-out infinite;
+    display: flex; align-items: center; gap: 10px; max-width: 280px; font-family: 'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  }
+  .pfc-bubble.hidden { display: none; }
+  @keyframes pfcBubbleFloat { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-8px) scale(1.02);} }
+  .pfc-wave-emoji { display: inline-block; animation: pfcWaveEmoji 1.5s ease-in-out infinite; font-size: 20px; }
+  @keyframes pfcWaveEmoji { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(25deg);} 75%{transform:rotate(-15deg);} }
+
+  .pfc-badge {
+    position: absolute; top: -8px; right: -8px; background: linear-gradient(135deg, #c47f2a 0%, #a06520 100%);
+    color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: bold; border: 3px solid white; animation: pfcBadgePulse 2s ease-in-out infinite;
+    box-shadow: 0 3px 10px rgba(196,127,42,0.4);
+  }
+  @keyframes pfcBadgePulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+
+  .pfc-container {
+    position: fixed; bottom: 100px; right: 20px; width: 400px; height: 600px; max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 140px); background: white; border-radius: 20px; box-shadow: 0 15px 60px rgba(0,0,0,0.3);
+    display: none; flex-direction: column; overflow: hidden; z-index: 9999;
+    animation: pfcSlideUpScale 0.4s cubic-bezier(0.34,1.56,0.64,1); font-family: 'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  }
+  .pfc-container * { box-sizing: border-box; }
+  .pfc-container.active { display: flex; }
+  @keyframes pfcSlideUpScale { from{opacity:0;transform:translateY(30px) scale(0.9);} to{opacity:1;transform:translateY(0) scale(1);} }
+
+  .pfc-header {
+    background: linear-gradient(135deg, #1a4a2e 0%, #0d2d1a 100%); color: white; padding: 13px 14px;
+    display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(26,74,46,0.3);
+    flex-shrink: 0; position: relative; overflow: hidden;
+  }
+  .pfc-header::before {
+    content: ''; position: absolute; top: -50%; right: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%); animation: pfcHeaderShine 3s ease-in-out infinite;
+  }
+  @keyframes pfcHeaderShine { 0%,100%{transform:translate(-50%,-50%);} 50%{transform:translate(0%,0%);} }
+  .pfc-header-avatar {
+    width: 48px; height: 48px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; box-shadow: 0 4px 14px rgba(0,0,0,0.25); border: 2.5px solid rgba(196,127,42,0.7); position: relative; z-index: 1;
+    font-weight: 800; font-size: 16px; color: #1a4a2e; letter-spacing: 0.5px;
+  }
+  .pfc-header-info { flex: 1; position: relative; z-index: 1; min-width: 0; }
+  .pfc-header-info h3 { font-size: 14px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pfc-header-info p { font-size: 11px; opacity: 0.9; display: flex; align-items: center; gap: 5px; margin: 0; }
+  .pfc-status-dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; display: inline-block; animation: pfcStatusBlink 2s ease-in-out infinite; box-shadow: 0 0 8px #4ade80; }
+  @keyframes pfcStatusBlink { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  .pfc-ai-badge { background: rgba(196,127,42,0.3); padding: 3px 9px; border-radius: 14px; font-size: 9px; font-weight: bold; margin-top: 3px; display: inline-block; border: 1px solid rgba(196,127,42,0.5); }
+
+  .pfc-reg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10; display: flex; flex-direction: column; overflow-y: auto; }
+  .pfc-reg-overlay.hidden { display: none; }
+  .pfc-reg-header { background: linear-gradient(135deg, #1a4a2e 0%, #0d2d1a 100%); color: white; padding: 22px 20px; text-align: center; flex-shrink: 0; position: relative; overflow: hidden; }
+  .pfc-reg-logo-wrap { width: 72px; height: 72px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; box-shadow: 0 4px 16px rgba(0,0,0,0.2); border: 2.5px solid rgba(196,127,42,0.7); font-weight: 800; font-size: 22px; color: #1a4a2e; }
+  .pfc-reg-header h2 { font-size: 19px; margin-bottom: 6px; position: relative; z-index: 1; }
+  .pfc-reg-header p { font-size: 13px; opacity: 0.9; position: relative; z-index: 1; margin: 0; }
+  .pfc-reg-form { flex: 1; padding: 22px; overflow-y: auto; background: linear-gradient(to bottom,#fafafa,#fff); }
+  .pfc-form-group { margin-bottom: 18px; }
+  .pfc-form-group label { display: block; margin-bottom: 7px; font-size: 14px; font-weight: 600; color: #333; }
+  .pfc-form-group label .pfc-required { color: #c47f2a; }
+  .pfc-form-group input { width: 100%; padding: 12px 16px; border: 2px solid #e5e5e5; border-radius: 12px; font-size: 14px; transition: all 0.3s ease; outline: none; background: white; }
+  .pfc-form-group input:focus { border-color: #1a4a2e; box-shadow: 0 0 0 4px rgba(26,74,46,0.1); transform: translateY(-1px); }
+  .pfc-form-group input.pfc-error { border-color: #c47f2a; animation: pfcShake 0.5s ease; }
+  @keyframes pfcShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
+  @keyframes pfcFadeIn { from{opacity:0;} to{opacity:1;} }
+  .pfc-error-message { color: #c47f2a; font-size: 12px; margin-top: 6px; display: none; }
+  .pfc-error-message.show { display: block; animation: pfcFadeIn 0.3s ease; }
+  .pfc-submit-btn { width: 100%; padding: 13px; background: linear-gradient(135deg,#1a4a2e,#0d2d1a); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 6px; box-shadow: 0 4px 15px rgba(26,74,46,0.4); }
+  .pfc-submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,74,46,0.5); }
+  .pfc-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .pfc-form-note { text-align: center; font-size: 12px; color: #666; margin-top: 14px; padding: 12px; background: white; border-radius: 10px; border: 1px solid #e5e5e5; }
+  .pfc-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: pfcSpin 0.8s linear infinite; margin-right: 8px; }
+  @keyframes pfcSpin { to{transform:rotate(360deg);} }
+
+  .pfc-messages { flex: 1; padding: 16px; overflow-y: auto; background: linear-gradient(to bottom,#f9f9f7,#fff); -webkit-overflow-scrolling: touch; }
+  .pfc-messages::-webkit-scrollbar { width: 6px; }
+  .pfc-messages::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 10px; }
+  .pfc-message { margin-bottom: 14px; display: flex; animation: pfcMsgSlide 0.4s ease; }
+  @keyframes pfcMsgSlide { from{opacity:0;transform:translateY(15px);} to{opacity:1;transform:translateY(0);} }
+  .pfc-message.bot { justify-content: flex-start; }
+  .pfc-message.user { justify-content: flex-end; }
+  .pfc-message-content { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.6; word-wrap: break-word; }
+  .pfc-message.bot .pfc-message-content { background: white; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
+  .pfc-message.user .pfc-message-content { background: linear-gradient(135deg,#1a4a2e,#0d2d1a); color: white; border-bottom-right-radius: 4px; box-shadow: 0 2px 8px rgba(26,74,46,0.4); }
+
+  .pfc-quick-replies { padding: 10px 14px; background: white; border-top: 1px solid #e5e5e5; display: flex; gap: 8px; flex-wrap: wrap; overflow-x: auto; flex-shrink: 0; max-height: 95px; }
+  .pfc-quick-replies::-webkit-scrollbar { height: 0; }
+  .pfc-quick-btn { padding: 7px 13px; background: linear-gradient(135deg,#f9f9f7,#fff); border: 2px solid #e5e5e5; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; flex-shrink: 0; font-weight: 500; }
+  .pfc-quick-btn:hover { background: linear-gradient(135deg,#1a4a2e,#0d2d1a); color: white; border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26,74,46,0.4); }
+  .pfc-back-btn { padding: 7px 13px; background: linear-gradient(135deg,#c47f2a,#a06520); border: none; border-radius: 20px; color: white; font-size: 12px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; flex-shrink: 0; font-weight: 600; display: none; }
+  .pfc-back-btn.show { display: inline-block; }
+  .pfc-back-btn:hover { background: linear-gradient(135deg,#a06520,#7a4e18); transform: translateY(-2px); }
+
+  .pfc-input-row { padding: 12px 14px; background: white; border-top: 1px solid #e5e5e5; display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+  .pfc-input-row input { flex: 1; padding: 11px 16px; border: 2px solid #e5e5e5; border-radius: 24px; font-size: 14px; outline: none; transition: all 0.3s ease; background: #fafafa; }
+  .pfc-input-row input:focus { border-color: #1a4a2e; background: white; box-shadow: 0 0 0 3px rgba(26,74,46,0.1); }
+  .pfc-input-row input:disabled { background: #f5f5f5; cursor: not-allowed; }
+  .pfc-input-row button { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#1a4a2e,#0d2d1a); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; flex-shrink: 0; box-shadow: 0 3px 10px rgba(26,74,46,0.4); }
+  .pfc-input-row button:hover:not(:disabled) { transform: scale(1.1) rotate(5deg); }
+  .pfc-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .pfc-input-row button svg { width: 20px; height: 20px; fill: white; }
+
+  .pfc-typing { display: none; padding: 12px 16px; background: white; border-radius: 18px; border-bottom-left-radius: 4px; max-width: 75px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
+  .pfc-typing span { height: 9px; width: 9px; background: #1a4a2e; border-radius: 50%; display: inline-block; margin-right: 5px; animation: pfcTyping 1.4s infinite; }
+  .pfc-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .pfc-typing span:nth-child(3) { animation-delay: 0.4s; margin-right: 0; }
+  @keyframes pfcTyping { 0%,60%,100%{transform:translateY(0);opacity:0.7;} 30%{transform:translateY(-10px);opacity:1;} }
+
+  .pfc-otp-step { display: none; }
+  .pfc-otp-step.active { display: block; }
+  .pfc-details-step { display: block; }
+  .pfc-details-step.hidden { display: none; }
+  .pfc-otp-info-box { background: linear-gradient(135deg, #f0f7f3, #e8f4ee); border: 1px solid #c8e6d4; border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center; }
+  .pfc-otp-info-box p { font-size: 13px; color: #444; line-height: 1.6; margin: 0; }
+  .pfc-otp-info-box strong { color: #1a4a2e; }
+  .pfc-otp-group { display: flex; gap: 8px; justify-content: center; margin: 16px 0; }
+  .pfc-otp-group input { width: 44px; height: 52px; text-align: center; font-size: 22px; font-weight: 800; border: 2.5px solid #e5e5e5; border-radius: 12px; outline: none; transition: all 0.3s; color: #1a4a2e; background: white; }
+  .pfc-otp-group input:focus { border-color: #1a4a2e; box-shadow: 0 0 0 3px rgba(26,74,46,0.15); transform: scale(1.08); }
+  .pfc-otp-group input.filled { border-color: #1a4a2e; background: #f0f7f3; }
+  .pfc-resend-row { text-align: center; margin-top: 10px; }
+  .pfc-resend-btn { background: none; border: none; color: #1a4a2e; font-size: 13px; cursor: pointer; font-weight: 600; text-decoration: underline; padding: 4px; }
+  .pfc-resend-btn:disabled { color: #aaa; text-decoration: none; cursor: not-allowed; }
+  .pfc-resend-timer { font-size: 13px; color: #888; }
+  .pfc-back-details-btn { background: none; border: 2px solid #e5e5e5; border-radius: 10px; color: #666; font-size: 13px; cursor: pointer; padding: 9px 16px; width: 100%; margin-bottom: 10px; font-weight: 500; transition: all 0.3s; }
+  .pfc-back-details-btn:hover { border-color: #1a4a2e; color: #1a4a2e; }
+
+  @media (max-width: 768px) {
+    .pfc-container { bottom:0;right:0;left:0;top:0;width:100%;height:100%;max-width:100%;max-height:100vh;border-radius:0; }
+    .pfc-bubble { bottom:95px;right:15px;max-width:220px;font-size:13px; }
+    .pfc-toggle { bottom:15px;right:15px;width:60px;height:60px; }
+  }
+</style>
+
+<div class="pfc-bubble" id="pfcBubble">
+  <span class="pfc-wave-emoji">👋</span>
+  <span id="pfcBubbleText">Curious about my projects?</span>
+</div>
+
+<button class="pfc-toggle" id="pfcToggle">
+  <span class="pfc-badge">1</span>
+  <span class="pfc-robot-icon">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="50" y1="14" x2="50" y2="24" stroke="#c47f2a" stroke-width="3" stroke-linecap="round"/>
+      <circle class="pfc-antenna-dot" cx="50" cy="11" r="3" fill="#c47f2a"/>
+      <ellipse class="pfc-hand" cx="18" cy="60" rx="7" ry="11" fill="#c47f2a"/>
+      <rect x="24" y="24" width="52" height="46" rx="23" fill="white"/>
+      <rect x="30" y="38" width="40" height="20" rx="10" fill="#0d2d1a"/>
+      <circle class="pfc-eye" cx="42" cy="48" r="5" fill="white"/>
+      <circle cx="42" cy="48" r="2" fill="#0d2d1a"/>
+      <circle class="pfc-eye" cx="58" cy="48" r="5" fill="white"/>
+      <circle cx="58" cy="48" r="2" fill="#0d2d1a"/>
+      <path d="M44 62 Q50 68 56 62" stroke="white" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </svg>
+  </span>
+  <svg viewBox="0 0 24 24" class="pfc-close-icon"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+</button>
+
+<div class="pfc-container" id="pfcContainer">
+
+  <div class="pfc-reg-overlay" id="pfcRegOverlay">
+    <div class="pfc-reg-header">
+      <div class="pfc-reg-logo-wrap">SS</div>
+      <h2>Hi, I'm Satyesh's Assistant!</h2>
+      <p>Share your details so I know who I'm chatting with</p>
+    </div>
+    <div class="pfc-reg-form">
+      <div class="pfc-details-step" id="pfcDetailsStep">
+        <form id="pfcDetailsForm">
+          <div class="pfc-form-group">
+            <label for="pfcName">Your Name <span class="pfc-required">*</span></label>
+            <input type="text" id="pfcName" placeholder="Enter your full name" required>
+            <div class="pfc-error-message" id="pfcNameError">Please enter your name</div>
+          </div>
+          <div class="pfc-form-group">
+            <label for="pfcEmail">Email Address <span class="pfc-required">*</span></label>
+            <input type="email" id="pfcEmail" placeholder="example@email.com" required>
+            <div class="pfc-error-message" id="pfcEmailError">Please enter a valid email</div>
+          </div>
+          <div class="pfc-form-group">
+            <label for="pfcPhone">Phone Number <span class="pfc-required">*</span></label>
+            <input type="tel" id="pfcPhone" placeholder="10-digit mobile number" required maxlength="10">
+            <div class="pfc-error-message" id="pfcPhoneError">Please enter a valid 10-digit number</div>
+          </div>
+          <button type="submit" class="pfc-submit-btn" id="pfcSubmitBtn">Send OTP 📧</button>
+          <div class="pfc-form-note">🔒 An OTP will be sent to your email to verify it's really you.</div>
+        </form>
+      </div>
+      <div class="pfc-otp-step" id="pfcOtpStep">
+        <div class="pfc-otp-info-box">
+          <p>📧 OTP sent to<br><strong id="pfcOtpEmailDisplay"></strong></p>
+          <p style="margin-top:6px;font-size:12px;color:#888;">Check your inbox (and spam folder)</p>
+        </div>
+        <div class="pfc-form-group">
+          <label style="text-align:center;display:block;margin-bottom:12px;">Enter 6-digit OTP</label>
+          <div class="pfc-otp-group" id="pfcOtpGroup">
+            <input type="text" maxlength="1" class="pfc-otp-digit" data-index="0" inputmode="numeric">
+            <input type="text" maxlength="1" class="pfc-otp-digit" data-index="1" inputmode="numeric">
+            <input type="text" maxlength="1" class="pfc-otp-digit" data-index="2" inputmode="numeric">
+            <input type="text" maxlength="1" class="pfc-otp-digit" data-index="3" inputmode="numeric">
+            <input type="text" maxlength="1" class="pfc-otp-digit" data-index="4" inputmode="numeric">
+            <input type="text" maxlength="1" class="pfc-otp-digit" data-index="5" inputmode="numeric">
+          </div>
+          <div class="pfc-error-message" id="pfcOtpError" style="text-align:center;"></div>
+        </div>
+        <button class="pfc-submit-btn" id="pfcVerifyOtpBtn">Verify & Start Chatting 💬</button>
+        <div class="pfc-resend-row">
+          <span class="pfc-resend-timer" id="pfcResendTimer">Resend OTP in <span id="pfcResendCountdown">30</span>s</span>
+          <button class="pfc-resend-btn" id="pfcResendBtn" disabled>Resend OTP</button>
+        </div>
+        <button class="pfc-back-details-btn" id="pfcBackToDetailsBtn">← Change Details</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pfc-header">
+    <div class="pfc-header-avatar">SS</div>
+    <div class="pfc-header-info">
+      <h3>Satyesh Kumar Singh</h3>
+      <p><span class="pfc-status-dot"></span><span>Online • Ready to help</span></p>
+      <span class="pfc-ai-badge">🤖 AI-POWERED</span>
+    </div>
+  </div>
+
+  <div class="pfc-messages" id="pfcMessages">
+    <div class="pfc-message bot">
+      <div class="pfc-typing" id="pfcTyping"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <div class="pfc-quick-replies" id="pfcQuickReplies">
+    <button class="pfc-back-btn" id="pfcBackToMenuBtn">⬅️ Back to Menu</button>
+    <button class="pfc-quick-btn" data-reply="Tell me about your projects">🚀 Projects</button>
+    <button class="pfc-quick-btn" data-reply="What are your skills?">🛠️ Skills</button>
+    <button class="pfc-quick-btn" data-reply="Tell me about your experience">💼 Experience</button>
+    <button class="pfc-quick-btn" data-reply="Can I see your resume?">📄 Resume</button>
+    <button class="pfc-quick-btn" data-reply="How can I contact you?">📞 Contact</button>
+  </div>
+
+  <div class="pfc-input-row">
+    <input type="text" id="pfcInput" placeholder="Ask me anything about Satyesh..." disabled>
+    <button id="pfcSendBtn" disabled>
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ══════════════════════════════════════════
+  // CONFIG — set this to your deployed API's URL
+  // ══════════════════════════════════════════
+  const API_BASE = "https://YOUR-VERCEL-PROJECT.vercel.app"; // <-- change me
+  const API_URL         = API_BASE + "/api/chat";
+  const SEND_OTP_URL    = API_BASE + "/api/send-otp";
+  const VERIFY_OTP_URL  = API_BASE + "/api/verify-otp";
+  const CALLBACK_URL    = API_BASE + "/api/callback-request";
+
+  const chatToggle    = document.getElementById('pfcToggle');
+  const chatContainer = document.getElementById('pfcContainer');
+  const chatBubble    = document.getElementById('pfcBubble');
+  const chatMessages  = document.getElementById('pfcMessages');
+  const userInput     = document.getElementById('pfcInput');
+  const sendBtn       = document.getElementById('pfcSendBtn');
+  const quickReplies  = document.getElementById('pfcQuickReplies');
+  const typingIndicator = document.getElementById('pfcTyping');
+  const regOverlay    = document.getElementById('pfcRegOverlay');
+  const detailsForm   = document.getElementById('pfcDetailsForm');
+  const submitBtn     = document.getElementById('pfcSubmitBtn');
+  const nameEl        = document.getElementById('pfcName');
+  const emailEl       = document.getElementById('pfcEmail');
+  const phoneEl       = document.getElementById('pfcPhone');
+
+  let isProcessing = false;
+  let isRegistered = false;
+  let userData = {};
+  let waitingForCallback = false;
+  let pendingQuery = '';
+  let otpToken = null; // stateless OTP token returned by /send-otp
+
+  if (localStorage.getItem('pfcUserRegistered')) {
+    isRegistered = true;
+    try { userData = JSON.parse(localStorage.getItem('pfcUserData')); } catch { userData = {}; }
+  }
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhone = (phone) => /^[6-9]\d{9}$/.test(phone);
+  const validateCallbackPhone = (phone) => {
+    const c = phone.replace(/\D/g, '');
+    return c.length === 10 && /^[6-9]\d{9}$/.test(c);
+  };
+
+  function scrollToBottom() { setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 100); }
+  function hideBadge() { setTimeout(() => { const b = document.querySelector('.pfc-badge'); if (b) b.style.display = 'none'; }, 300); }
+
+  function addMessage(text, sender) {
+    const div = document.createElement('div');
+    div.className = `pfc-message ${sender}`;
+    const content = document.createElement('div');
+    content.className = 'pfc-message-content';
+    content.innerHTML = text
+      .replace(/\n/g, '<br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#1a7a52;text-decoration:underline;word-break:break-all;">$1</a>');
+    div.appendChild(content);
+    chatMessages.insertBefore(div, typingIndicator.parentElement);
+    scrollToBottom();
+  }
+
+  // ══════════════════════════════════════════
+  // SEND MESSAGE
+  // ══════════════════════════════════════════
+  async function sendMessage() {
+    const message = userInput.value.trim();
+    if (!message || isProcessing) return;
+
+    if (waitingForCallback) {
+      if (validateCallbackPhone(message)) {
+        addMessage(message, 'user');
+        userInput.value = '';
+        isProcessing = true;
+        typingIndicator.style.display = 'block';
+        userInput.disabled = true; sendBtn.disabled = true;
+        scrollToBottom();
+        await handleCallbackRequest(message);
+        isProcessing = false;
+        typingIndicator.style.display = 'none';
+        userInput.disabled = false; sendBtn.disabled = false;
+        userInput.focus();
+      } else {
+        addMessage(message, 'user');
+        addMessage("❌ Please enter a valid 10-digit number starting with 6, 7, 8, or 9.\n\nExample: 9876543210", 'bot');
+        userInput.value = '';
+      }
+      return;
+    }
+
+    addMessage(message, 'user');
+    userInput.value = '';
+    isProcessing = true;
+    typingIndicator.style.display = 'block';
+    userInput.disabled = true; sendBtn.disabled = true;
+    scrollToBottom();
+
+    try {
+      const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+      if (!res.ok) throw new Error('http');
+      const data = await res.json();
+      typingIndicator.style.display = 'none';
+      if (data.success && data.reply) {
+        addMessage(data.reply, 'bot');
+        if (data.requiresCallback) {
+          waitingForCallback = true;
+          pendingQuery = data.userQuery || message;
+          quickReplies.innerHTML = `<button class="pfc-back-btn show" id="pfcBackToMenuBtn">⬅️ Cancel</button>`;
+          document.getElementById('pfcBackToMenuBtn').addEventListener('click', () => { waitingForCallback = false; pendingQuery = ''; resetToMainMenu(); });
+        } else {
+          const btn = document.getElementById('pfcBackToMenuBtn');
+          if (btn) btn.classList.add('show');
+        }
+      } else { throw new Error('invalid'); }
+    } catch (err) {
+      typingIndicator.style.display = 'none';
+      addMessage(String(err).includes('fetch') ? "Unable to connect. Please check your internet and try again." : "Sorry, something went wrong. Please try again.", 'bot');
+    } finally {
+      isProcessing = false;
+      userInput.disabled = false; sendBtn.disabled = false;
+      userInput.focus();
+    }
+  }
+
+  // ══════════════════════════════════════════
+  // CALLBACK HANDLER
+  // ══════════════════════════════════════════
+  async function handleCallbackRequest(number) {
+    try {
+      const res = await fetch(CALLBACK_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: userData.name, email: userData.email, phone: userData.phone, query: pendingQuery, callback_number: number })
+      });
+      const data = await res.json();
+      addMessage(data.success
+        ? `Thank you! ✅ Got it.\n\n📞 I'll pass your number (${number}) along to Satyesh — expect a call soon!\n\nAnything else I can help with?`
+        : "Sorry, something went wrong sending that. You can also just email directly.",
+        'bot');
+      waitingForCallback = false;
+      pendingQuery = '';
+      showDefaultQuickReplies();
+    } catch {
+      addMessage("Connection error — please try emailing instead.", 'bot');
+    }
+  }
+
+  function resetToMainMenu() {
+    waitingForCallback = false;
+    pendingQuery = '';
+    showDefaultQuickReplies();
+    addMessage("Back to the main menu! 💻 What would you like to know?", 'bot');
+  }
+
+  function showDefaultQuickReplies() {
+    quickReplies.innerHTML = `
+      <button class="pfc-back-btn" id="pfcBackToMenuBtn">⬅️ Back to Menu</button>
+      <button class="pfc-quick-btn" data-reply="Tell me about your projects">🚀 Projects</button>
+      <button class="pfc-quick-btn" data-reply="What are your skills?">🛠️ Skills</button>
+      <button class="pfc-quick-btn" data-reply="Tell me about your experience">💼 Experience</button>
+      <button class="pfc-quick-btn" data-reply="Can I see your resume?">📄 Resume</button>
+      <button class="pfc-quick-btn" data-reply="How can I contact you?">📞 Contact</button>
+    `;
+    document.getElementById('pfcBackToMenuBtn').addEventListener('click', resetToMainMenu);
+  }
+
+  // ══════════════════════════════════════════
+  // CHAT TOGGLE
+  // ══════════════════════════════════════════
+  chatToggle.addEventListener('click', () => {
+    chatContainer.classList.toggle('active');
+    chatToggle.classList.toggle('active');
+
+    if (chatContainer.classList.contains('active')) {
+      chatBubble.classList.add('hidden');
+      hideBadge();
+      if (isRegistered) {
+        regOverlay.classList.add('hidden');
+        userInput.focus();
+        if (!localStorage.getItem('pfcWelcomeShown')) {
+          setTimeout(() => {
+            addMessage(`Hi ${userData.name}! 👋 I'm Satyesh's portfolio assistant.\n\nAsk me about his projects, skills, experience — or how to get in touch! 💻`, 'bot');
+            localStorage.setItem('pfcWelcomeShown', 'true');
+          }, 300);
+        }
+      } else {
+        regOverlay.classList.remove('hidden');
+        nameEl.focus();
+      }
+    } else {
+      chatBubble.classList.remove('hidden');
+    }
+  });
+
+  // ══════════════════════════════════════════
+  // OTP LOGIC
+  // ══════════════════════════════════════════
+  let resendInterval = null;
+
+  function startResendTimer() {
+    let seconds = 30;
+    const countdown = document.getElementById('pfcResendCountdown');
+    const resendTimer = document.getElementById('pfcResendTimer');
+    const resendBtn = document.getElementById('pfcResendBtn');
+    resendTimer.style.display = 'inline';
+    resendBtn.style.display = 'none';
+    countdown.textContent = seconds;
+    if (resendInterval) clearInterval(resendInterval);
+    resendInterval = setInterval(() => {
+      seconds--;
+      countdown.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(resendInterval);
+        resendTimer.style.display = 'none';
+        resendBtn.style.display = 'inline';
+        resendBtn.disabled = false;
+      }
+    }, 1000);
+  }
+
+  function showOTPStep(email) {
+    document.getElementById('pfcDetailsStep').classList.add('hidden');
+    document.getElementById('pfcOtpStep').classList.add('active');
+    document.getElementById('pfcOtpEmailDisplay').textContent = email;
+    document.querySelectorAll('.pfc-otp-digit').forEach(inp => { inp.value = ''; inp.classList.remove('filled'); });
+    document.getElementById('pfcOtpError').classList.remove('show');
+    document.querySelector('.pfc-otp-digit').focus();
+    startResendTimer();
+  }
+
+  function showDetailsStep() {
+    document.getElementById('pfcOtpStep').classList.remove('active');
+    document.getElementById('pfcDetailsStep').classList.remove('hidden');
+    if (resendInterval) clearInterval(resendInterval);
+  }
+
+  function getOTPValue() {
+    return Array.from(document.querySelectorAll('.pfc-otp-digit')).map(i => i.value).join('');
+  }
+
+  document.addEventListener('input', (e) => {
+    if (!e.target.classList.contains('pfc-otp-digit')) return;
+    const idx = parseInt(e.target.dataset.index);
+    const val = e.target.value.replace(/\D/g, '');
+    e.target.value = val;
+    e.target.classList.toggle('filled', val !== '');
+    if (val && idx < 5) document.querySelectorAll('.pfc-otp-digit')[idx + 1].focus();
+    if (getOTPValue().length === 6) setTimeout(() => document.getElementById('pfcVerifyOtpBtn').click(), 200);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!e.target.classList.contains('pfc-otp-digit')) return;
+    const idx = parseInt(e.target.dataset.index);
+    if (e.key === 'Backspace' && !e.target.value && idx > 0) document.querySelectorAll('.pfc-otp-digit')[idx - 1].focus();
+  });
+
+  document.addEventListener('paste', (e) => {
+    if (!e.target.classList.contains('pfc-otp-digit')) return;
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const digits = document.querySelectorAll('.pfc-otp-digit');
+    pasted.split('').forEach((ch, i) => { if (digits[i]) { digits[i].value = ch; digits[i].classList.add('filled'); } });
+    if (pasted.length === 6) setTimeout(() => document.getElementById('pfcVerifyOtpBtn').click(), 200);
+  });
+
+  document.getElementById('pfcBackToDetailsBtn').addEventListener('click', showDetailsStep);
+
+  document.getElementById('pfcResendBtn').addEventListener('click', async () => {
+    const email = emailEl.value.trim();
+    const name = nameEl.value.trim();
+    const phone = phoneEl.value.trim();
+    document.getElementById('pfcResendBtn').disabled = true;
+    try {
+      const res = await fetch(SEND_OTP_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, phone }) });
+      const data = await res.json();
+      if (data.success) { otpToken = data.token; startResendTimer(); }
+      else { alert(data.error || 'Failed to resend OTP'); }
+    } catch { alert('Connection error. Please try again.'); }
+  });
+
+  document.getElementById('pfcVerifyOtpBtn').addEventListener('click', async () => {
+    const otp = getOTPValue();
+    const email = emailEl.value.trim();
+    const name = nameEl.value.trim();
+    const phone = phoneEl.value.trim();
+    const otpError = document.getElementById('pfcOtpError');
+    otpError.classList.remove('show');
+
+    if (otp.length !== 6) {
+      otpError.textContent = 'Please enter the complete 6-digit OTP.';
+      otpError.classList.add('show');
+      return;
+    }
+
+    const verifyBtn = document.getElementById('pfcVerifyOtpBtn');
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = '<span class="pfc-spinner"></span>Verifying...';
+
+    try {
+      const res = await fetch(VERIFY_OTP_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: otpToken, otp }) });
+      const data = await res.json();
+      if (data.success) {
+        userData = { name, email, phone };
+        localStorage.setItem('pfcUserRegistered', 'true');
+        localStorage.setItem('pfcUserData', JSON.stringify(userData));
+        isRegistered = true;
+        if (resendInterval) clearInterval(resendInterval);
+        regOverlay.classList.add('hidden');
+        userInput.disabled = false; sendBtn.disabled = false;
+        userInput.focus();
+        setTimeout(() => {
+          addMessage(`Hi ${name}! 👋 I'm Satyesh's portfolio assistant.\n\nAsk me about his projects, skills, experience — or how to get in touch! 💻`, 'bot');
+          localStorage.setItem('pfcWelcomeShown', 'true');
+          const btn = document.getElementById('pfcBackToMenuBtn');
+          if (btn) btn.classList.remove('show');
+        }, 300);
+      } else {
+        otpError.textContent = data.error || 'Invalid OTP. Please try again.';
+        otpError.classList.add('show');
+        document.querySelectorAll('.pfc-otp-digit').forEach(i => { i.value = ''; i.classList.remove('filled'); });
+        document.querySelector('.pfc-otp-digit').focus();
+      }
+    } catch {
+      otpError.textContent = 'Connection error. Please try again.';
+      otpError.classList.add('show');
+    } finally {
+      verifyBtn.disabled = false;
+      verifyBtn.innerHTML = 'Verify & Start Chatting 💬';
+    }
+  });
+
+  detailsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.pfc-error-message').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('#pfcDetailsStep input').forEach(el => el.classList.remove('pfc-error'));
+    const name = nameEl.value.trim();
+    const email = emailEl.value.trim();
+    const phone = phoneEl.value.trim();
+    let hasError = false;
+    if (!name) { nameEl.classList.add('pfc-error'); const el = document.getElementById('pfcNameError'); el.textContent = 'Please enter your name'; el.classList.add('show'); hasError = true; }
+    if (!email || !validateEmail(email)) { emailEl.classList.add('pfc-error'); const el = document.getElementById('pfcEmailError'); el.textContent = (!email ? 'Please enter your email' : 'Please enter a valid email'); el.classList.add('show'); hasError = true; }
+    if (!phone || !validatePhone(phone)) { phoneEl.classList.add('pfc-error'); const el = document.getElementById('pfcPhoneError'); el.textContent = (!phone ? 'Please enter your phone number' : 'Please enter a valid 10-digit number'); el.classList.add('show'); hasError = true; }
+    if (hasError) return;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="pfc-spinner"></span>Sending OTP...';
+    try {
+      const res = await fetch(SEND_OTP_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, phone }) });
+      const data = await res.json();
+      if (data.success) { otpToken = data.token; showOTPStep(email); }
+      else { alert(data.error || 'Failed to send OTP. Please try again.'); }
+    } catch { alert('Connection error. Please check your internet and try again.'); }
+    finally { submitBtn.disabled = false; submitBtn.innerHTML = 'Send OTP 📧'; }
+  });
+
+  phoneEl.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
+
+  sendBtn.addEventListener('click', sendMessage);
+  userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+  quickReplies.addEventListener('click', (e) => {
+    if (e.target.classList.contains('pfc-quick-btn')) {
+      const r = e.target.getAttribute('data-reply');
+      if (r) { userInput.value = r; sendMessage(); }
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && chatContainer.classList.contains('active')) chatToggle.click();
+  });
+
+  // Rotating bubble messages
+  const bubbleMessages = [
+    "Curious about my projects?",
+    "How can I help you today?",
+    "Ask me about my skills & experience!",
+    "Want my resume or contact info?"
+  ];
+  let bubbleMsgIndex = 0;
+  setInterval(() => {
+    const textEl = document.getElementById('pfcBubbleText');
+    if (!textEl || chatBubble.classList.contains('hidden')) return;
+    bubbleMsgIndex = (bubbleMsgIndex + 1) % bubbleMessages.length;
+    textEl.style.transition = 'opacity 0.3s ease';
+    textEl.style.opacity = 0;
+    setTimeout(() => { textEl.textContent = bubbleMessages[bubbleMsgIndex]; textEl.style.opacity = 1; }, 300);
+  }, 4000);
+})();
+</script>
