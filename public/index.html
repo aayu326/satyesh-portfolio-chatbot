@@ -6,7 +6,7 @@
 <style>
   body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; color: #333; }
   .placeholder { text-align: center; max-width: 480px; padding: 20px; }
-  .placeholder h1 { color: #1a4a2e; }
+  .placeholder h1 { color: #000000; }
 </style>
 </head>
 <body>
@@ -33,7 +33,7 @@
 
   .pfc-toggle {
     position: fixed; bottom: 20px; right: 20px; width: 65px; height: 65px; border-radius: 50%;
-    background: linear-gradient(135deg, #1a4a2e 0%, #0d2d1a 100%); border: none; cursor: pointer;
+    background: linear-gradient(135deg, #030705 0%, #0d2d1a 100%); border: none; cursor: pointer;
     box-shadow: 0 8px 25px rgba(26,74,46,0.5); display: flex; align-items: center; justify-content: center;
     transition: all 0.3s ease; z-index: 9999; overflow: hidden; font-family: 'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
   }
@@ -197,19 +197,8 @@
 
 <button class="pfc-toggle" id="pfcToggle">
   <span class="pfc-badge">1</span>
-  <span class="pfc-robot-icon">
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <line x1="50" y1="14" x2="50" y2="24" stroke="#c47f2a" stroke-width="3" stroke-linecap="round"/>
-      <circle class="pfc-antenna-dot" cx="50" cy="11" r="3" fill="#c47f2a"/>
-      <ellipse class="pfc-hand" cx="18" cy="60" rx="7" ry="11" fill="#c47f2a"/>
-      <rect x="24" y="24" width="52" height="46" rx="23" fill="white"/>
-      <rect x="30" y="38" width="40" height="20" rx="10" fill="#0d2d1a"/>
-      <circle class="pfc-eye" cx="42" cy="48" r="5" fill="white"/>
-      <circle cx="42" cy="48" r="2" fill="#0d2d1a"/>
-      <circle class="pfc-eye" cx="58" cy="48" r="5" fill="white"/>
-      <circle cx="58" cy="48" r="2" fill="#0d2d1a"/>
-      <path d="M44 62 Q50 68 56 62" stroke="white" stroke-width="3" stroke-linecap="round" fill="none"/>
-    </svg>
+  <span class="pfc-robot-icon" style="position:absolute; inset:0; width:100%; height:100%;">
+    <img src="https://i.postimg.cc/DZxyy1b3/logochat.png" alt="Satyesh Kumar Singh" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%;">
   </span>
   <svg viewBox="0 0 24 24" class="pfc-close-icon"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
 </button>
@@ -218,7 +207,7 @@
 
   <div class="pfc-reg-overlay" id="pfcRegOverlay">
     <div class="pfc-reg-header">
-      <div class="pfc-reg-logo-wrap">SS</div>
+      <div class="pfc-reg-logo-wrap">AAA</div>
       <h2>Hi, I'm Satyesh's Assistant!</h2>
       <p>Share your details so I know who I'm chatting with</p>
     </div>
@@ -271,8 +260,10 @@
     </div>
   </div>
 
-  <div class="pfc-header">
-    <div class="pfc-header-avatar">SS</div>
+ <div class="pfc-header">
+    <div class="pfc-header-avatar">
+      <img src="https://i.postimg.cc/DZxyy1b3/logochat.png" alt="Satyesh Kumar Singh" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+    </div>
     <div class="pfc-header-info">
       <h3>Satyesh Kumar Singh</h3>
       <p><span class="pfc-status-dot"></span><span>Online • Ready to help</span></p>
